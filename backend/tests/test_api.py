@@ -155,3 +155,78 @@ def test_security_headers_are_present(client):
         response.headers["Permissions-Policy"]
         == "camera=(), microphone=(), geolocation=()"
     )
+
+
+def test_reject_request_with_oversized_content_length(client):
+    response = client.post(
+        "/api/tickets",
+        headers={
+            "Content-Length": str(13 * 1024 * 1024),
+            "Content-Type": "application/json",
+        },
+    )
+
+    assert response.status_code == 413
+    assert response.json()["detail"] == "Request body too large."
+
+def test_reject_streamed_oversized_request():
+    import asyncio
+
+    from starlette.responses import JSONResponse
+    from app.main import RequestBodyLimitMiddleware
+
+    async def app(scope, receive, send):
+        while True:
+            message = await receive()
+
+            if message["type"] == "http.request":
+                if not message.get("more_body", False):
+                    break
+
+        response = JSONResponse({"status": "processed"})
+        await response(scope, receive, send)
+
+    middleware = RequestBodyLimitMiddleware(
+        app,
+        max_body_bytes=10,
+    )
+
+    messages = [
+        {
+            "type": "http.request",
+            "body": b"A" * 8,
+            "more_body": True,
+        },
+        {
+            "type": "http.request",
+            "body": b"B" * 8,
+            "more_body": False,
+        },
+    ]
+
+    async def receive():
+        return messages.pop(0)
+
+    sent_messages = []
+
+    async def send(message):
+        sent_messages.append(message)
+
+    scope = {
+        "type": "http",
+        "asgi": {"version": "3.0"},
+        "method": "POST",
+        "path": "/test",
+        "headers": [],
+    }
+
+    asyncio.run(
+        middleware(scope, receive, send)
+    )
+
+    response_start = next(
+        message
+        for message in sent_messages
+        if message["type"] == "http.response.start"
+    )
+    assert response_start["status"] == 413

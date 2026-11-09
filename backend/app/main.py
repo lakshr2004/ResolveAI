@@ -14,6 +14,7 @@ from fastapi import (
     Query,
 )
 
+from starlette.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
@@ -144,8 +145,155 @@ app.add_middleware(
     ],
 )
 
+# --------------------------------------------------
+# REQUEST BODY SIZE LIMIT MIDDLEWARE
+# --------------------------------------------------
+# --------------------------------------------------
+# REQUEST BODY SIZE LIMIT MIDDLEWARE
+# --------------------------------------------------
+
+class RequestBodyTooLarge(Exception):
+    pass
 
 
+def contains_body_limit_exception(exc):
+
+    if isinstance(exc, RequestBodyTooLarge):
+        return True
+
+    if isinstance(exc, BaseExceptionGroup):
+        return any(
+            contains_body_limit_exception(item)
+            for item in exc.exceptions
+        )
+
+    return False
+
+
+class RequestBodyLimitMiddleware:
+
+    def __init__(self, app, max_body_bytes: int):
+        self.app = app
+        self.max_body_bytes = max_body_bytes
+
+    async def __call__(self, scope, receive, send):
+
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        response_started = False
+
+        async def secure_send(message):
+
+            nonlocal response_started
+
+            if message["type"] == "http.response.start":
+
+                response_started = True
+
+                headers = list(message.get("headers", []))
+
+                security_headers = {
+                    b"x-content-type-options": b"nosniff",
+                    b"x-frame-options": b"DENY",
+                    b"referrer-policy": b"strict-origin-when-cross-origin",
+                    b"permissions-policy": (
+                        b"camera=(), microphone=(), geolocation=()"
+                    ),
+                }
+
+                existing = {
+                    key.lower()
+                    for key, _ in headers
+                }
+
+                for key, value in security_headers.items():
+                    if key not in existing:
+                        headers.append((key, value))
+
+                message["headers"] = headers
+
+            await send(message)
+
+        content_lengths = [
+            value
+            for key, value in scope.get("headers", [])
+            if key.lower() == b"content-length"
+        ]
+
+        if len(content_lengths) > 1:
+            response = JSONResponse(
+                status_code=400,
+                content={"detail": "Invalid Content-Length header."},
+            )
+            await response(scope, receive, secure_send)
+            return
+
+        if content_lengths:
+
+            try:
+                content_length = int(content_lengths[0])
+
+                if content_length < 0:
+                    raise ValueError
+
+            except ValueError:
+                response = JSONResponse(
+                    status_code=400,
+                    content={"detail": "Invalid Content-Length header."},
+                )
+                await response(scope, receive, secure_send)
+                return
+
+            if content_length > self.max_body_bytes:
+
+                response = JSONResponse(
+                    status_code=413,
+                    content={"detail": "Request body too large."},
+                )
+                await response(scope, receive, secure_send)
+                return
+
+        received_bytes = 0
+
+        async def limited_receive():
+
+            nonlocal received_bytes
+
+            message = await receive()
+
+            if message["type"] == "http.request":
+
+                received_bytes += len(message.get("body", b""))
+
+                if received_bytes > self.max_body_bytes:
+                    raise RequestBodyTooLarge()
+
+            return message
+
+        try:
+            await self.app(scope, limited_receive, secure_send)
+
+        except BaseException as exc:
+
+            if not contains_body_limit_exception(exc):
+                raise
+
+            if not response_started:
+
+                response = JSONResponse(
+                    status_code=413,
+                    content={"detail": "Request body too large."},
+                )
+
+                await response(scope, receive, secure_send)
+
+
+app.add_middleware(
+    RequestBodyLimitMiddleware,
+    max_body_bytes=settings.max_request_body_mb * 1024 * 1024,
+)
 # --------------------------------------------------
 # SECURITY HEADERS MIDDLEWARE
 # --------------------------------------------------

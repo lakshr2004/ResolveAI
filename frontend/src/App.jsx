@@ -67,6 +67,7 @@ import api, {
 } from './services/api';
 import Login from './pages/Login';
 import { useAuth } from './context/AuthContext';
+import UserManagement from './pages/UserManagement';
 
 // --------------------------------------------------
 // NAVIGATION
@@ -79,6 +80,7 @@ const nav = [
   ['Knowledge base', '/knowledge', BookOpen, ['Admin', 'Agent', 'Viewer']],
   ['Escalations', '/escalations', ShieldAlert, ['Admin', 'Agent']],
   ['System health', '/settings', Settings, ['Admin']],
+  ['User management', '/users', Users, ['Admin']],
 ];
 
 
@@ -2107,6 +2109,16 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+  path="/users"
+  element={
+    <ProtectedRoute allowedRoles={['Admin']}>
+      <Shell>
+        <UserManagement />
+      </Shell>
+    </ProtectedRoute>
+  }
+/>
 
       <Route
         path="*"

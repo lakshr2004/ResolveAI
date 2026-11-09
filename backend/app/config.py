@@ -25,8 +25,11 @@ class Settings(BaseSettings):
     similarity_threshold: float = 0.35
     top_k: int = 5
 
-    # Document Upload Configuration
+        # Document Upload Configuration
     max_upload_mb: int = 10
+
+    # Request Body Configuration
+    max_request_body_mb: int = 12
 
     # CORS Configuration
     cors_origins: str = "http://localhost:5173"
@@ -43,6 +46,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_security_settings(self):
+
         if len(self.jwt_secret_key) < 32:
             raise ValueError(
                 "JWT_SECRET_KEY must contain at least 32 characters"
@@ -58,7 +62,23 @@ class Settings(BaseSettings):
                 "ACCESS_TOKEN_EXPIRE_MINUTES must be between 1 and 1440"
             )
 
+        if self.max_upload_mb < 1:
+            raise ValueError(
+                "MAX_UPLOAD_MB must be at least 1"
+            )
+
+        if self.max_request_body_mb < 1:
+            raise ValueError(
+                "MAX_REQUEST_BODY_MB must be at least 1"
+            )
+
+        if self.max_request_body_mb <= self.max_upload_mb:
+            raise ValueError(
+                "MAX_REQUEST_BODY_MB must be greater than MAX_UPLOAD_MB"
+            )
+
         return self
+
 
     model_config = SettingsConfigDict(
         env_file=".env",

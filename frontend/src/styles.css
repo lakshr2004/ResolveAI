@@ -637,3 +637,402 @@ td small { display: block; color: #71809b; font-size: 9px; margin-top: 3px; }
   background: #321c2a;
   border-radius: 7px;
 }
+
+
+
+/* =========================================
+   USER MANAGEMENT PAGE
+========================================= */
+
+.user-management {
+  width: 100%;
+}
+
+.user-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-page-actions .btn,
+.user-modal-footer .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+/* Stats */
+
+.user-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+  margin-bottom: 18px;
+}
+
+.user-stat-card {
+  min-width: 0;
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+}
+
+.user-stat-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+}
+
+.user-stat-icon.purple {
+  color: #b4a8ff;
+  background: #302b55;
+}
+
+.user-stat-icon.blue {
+  color: #91b9ff;
+  background: #203756;
+}
+
+.user-stat-icon.orange {
+  color: #ffc17b;
+  background: #44321f;
+}
+
+.user-stat-icon.green {
+  color: #75e0b6;
+  background: #1d4039;
+}
+
+.user-stat-card small {
+  display: block;
+  color: #8593ad;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.user-stat-card strong {
+  display: block;
+  color: #edf1fc;
+  font-size: 23px;
+  font-weight: 800;
+  margin-top: 6px;
+}
+
+/* User table */
+
+.user-table-card {
+  padding: 20px 0;
+  overflow: hidden;
+}
+
+.user-table-heading {
+  padding: 0 20px 17px;
+}
+
+.user-table-heading h3 {
+  color: #e6ebf8;
+  font: 700 14px Manrope, sans-serif;
+  margin: 0;
+}
+
+.user-table-heading p {
+  color: #7887a1;
+  font-size: 10px;
+  margin: 5px 0 0;
+}
+
+.user-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px 17px;
+}
+
+.user-filters .searchbox {
+  min-width: 180px;
+}
+
+.user-filters select,
+.user-controls select,
+.user-form-fields select {
+  min-height: 38px;
+  border: 1px solid #2a3853;
+  border-radius: 8px;
+  padding: 0 11px;
+  color: #c7d1e4;
+  background: #111c30;
+  font-size: 10px;
+  outline: none;
+}
+
+.user-filters select:focus,
+.user-controls select:focus,
+.user-form-fields select:focus {
+  border-color: #8278f2;
+}
+
+.user-table {
+  min-width: 760px;
+}
+
+.user-table th {
+  padding: 13px 18px;
+}
+
+.user-table td {
+  vertical-align: middle;
+}
+
+.user-identity {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.user-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #302c55;
+  color: #c5bbff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.user-identity b,
+.user-identity small {
+  display: block;
+}
+
+.user-identity small {
+  color: #7887a1;
+  font-size: 9px;
+  margin-top: 4px;
+}
+
+.user-you-label {
+  display: inline-block;
+  margin-top: 4px;
+  color: #a99aff;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.user-role-admin {
+  color: #c3b6ff;
+  background: #302b55;
+  border-color: #494078;
+}
+
+.user-role-agent {
+  color: #91b9ff;
+  background: #203756;
+  border-color: #34537a;
+}
+
+.user-role-viewer {
+  color: #ffc17b;
+  background: #44321f;
+  border-color: #654b2b;
+}
+
+.user-controls {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.user-controls select {
+  min-width: 95px;
+  min-height: 34px;
+}
+
+.user-controls select:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.user-status-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.user-status-btn.deactivate {
+  color: #ff9da9;
+  background: #3a2632;
+  border-color: #654052;
+}
+
+.user-status-btn.activate {
+  color: #75e0b6;
+  background: #1c3d36;
+  border-color: #315d50;
+}
+
+.user-status-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+/* Loading and messages */
+
+.user-loading {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #9ba9c0;
+  font-size: 11px;
+}
+
+.user-message {
+  justify-content: flex-start;
+}
+
+.user-message-close {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.user-success {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 14px;
+  margin-bottom: 15px;
+  border: 1px solid #285c50;
+  border-radius: 9px;
+  background: #183d38;
+  color: #80e0bc;
+  font-size: 10px;
+}
+
+/* Create user modal */
+
+.user-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #050a14c9;
+  backdrop-filter: blur(5px);
+}
+
+.user-modal {
+  width: 100%;
+  max-width: 490px;
+  padding: 25px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.user-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 23px;
+}
+
+.user-modal-header h2 {
+  color: #edf1fc;
+  font: 800 20px Manrope, sans-serif;
+  margin: 5px 0;
+}
+
+.user-modal-header p {
+  color: #8593ad;
+  font-size: 10px;
+  margin: 0;
+}
+
+.user-form-fields {
+  display: grid;
+  gap: 17px;
+}
+
+.user-field-hint {
+  color: #7887a1;
+  font-size: 9px;
+  font-weight: 400;
+}
+
+.user-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.user-spin {
+  animation: user-spin-animation 1s linear infinite;
+}
+
+@keyframes user-spin-animation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+
+@media (max-width: 850px) {
+  .user-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .user-page-actions {
+    width: 100%;
+  }
+
+  .user-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-filters .searchbox {
+    min-height: 38px;
+  }
+
+  .user-filters select {
+    width: 100%;
+  }
+
+  .user-modal {
+    padding: 19px;
+  }
+}
+
+@media (max-width: 380px) {
+  .user-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
