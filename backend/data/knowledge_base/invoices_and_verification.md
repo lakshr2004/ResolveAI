@@ -1,0 +1,2 @@
+# Invoices and Account Verification
+Invoices are available from Account Settings under Billing History after a payment is confirmed. Customers can download the invoice PDF for a completed transaction. If an invoice is missing, first verify that the payment is completed and that the customer is signed into the purchasing account. Before disclosing invoice or account details, agents must verify account ownership using the approved verification workflow. Never request passwords or one-time passcodes from customers.

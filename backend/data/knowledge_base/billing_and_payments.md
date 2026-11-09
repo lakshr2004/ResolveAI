@@ -1,0 +1,2 @@
+# Billing and Payment Troubleshooting
+A payment may show as pending while the payment provider confirms the transaction. Customers should avoid retrying while a transaction is pending to prevent duplicate charges. If a payment is marked failed but money was debited, retain the transaction reference and contact support for reconciliation. The support team should verify the payment provider status before confirming success or failure. Never promise a refund or a settlement timeline unless the payment provider has confirmed it.

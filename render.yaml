@@ -1,0 +1,55 @@
+
+services:
+  - type: web
+    name: resolveai-api
+    runtime: python
+    rootDir: backend
+    plan: starter
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    disk:
+      name: resolveai-data
+      mountPath: /opt/render/project/src/backend/data
+      sizeGB: 1
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.4
+
+      - key: DATABASE_URL
+        value: sqlite:////opt/render/project/src/backend/data/resolveai.db
+
+      - key: QDRANT_PATH
+        value: /opt/render/project/src/backend/data/qdrant
+
+      - key: QDRANT_COLLECTION
+        value: resolveai_knowledge
+
+      - key: GROQ_API_KEY
+        sync: false
+
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
+
+      - key: JWT_SECRET_KEY
+        generateValue: true
+
+      - key: JWT_ALGORITHM
+        value: HS256
+
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+
+      - key: ADMIN_EMAIL
+        sync: false
+
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      - key: ADMIN_FULL_NAME
+        value: ResolveAI Admin
+
+      - key: CORS_ORIGINS
+        sync: false

@@ -1,0 +1,2 @@
+# Refund Review Policy
+Refund requests are reviewed by the billing support team. Eligibility depends on the product, transaction status, and applicable purchase terms. A support agent must inspect the original transaction and the customer's purchase terms before confirming eligibility. The knowledge base does not define a universal refund window or guaranteed refund amount. Do not promise a refund before the billing team approves it. Escalate disputed, duplicate, or high-value transactions for manual review.

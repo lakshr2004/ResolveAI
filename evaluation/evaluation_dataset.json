@@ -1,0 +1,94 @@
+[
+  {
+    "question": "How do I reset my password?",
+    "relevant_documents": [
+      "password_and_login.md"
+    ]
+  },
+  {
+    "question": "How long does a password reset link remain valid?",
+    "relevant_documents": [
+      "password_and_login.md"
+    ]
+  },
+  {
+    "question": "Why is my account locked after failed logins?",
+    "relevant_documents": [
+      "password_and_login.md"
+    ]
+  },
+  {
+    "question": "What should I do if I paid but payment is pending?",
+    "relevant_documents": [
+      "billing_and_payments.md"
+    ]
+  },
+  {
+    "question": "My payment failed but money was deducted. What now?",
+    "relevant_documents": [
+      "billing_and_payments.md"
+    ]
+  },
+  {
+    "question": "Can support guarantee a refund?",
+    "relevant_documents": [
+      "refund_policy.md"
+    ]
+  },
+  {
+    "question": "How are refund requests reviewed?",
+    "relevant_documents": [
+      "refund_policy.md"
+    ]
+  },
+  {
+    "question": "Where do I cancel my subscription?",
+    "relevant_documents": [
+      "subscriptions_and_cancellation.md"
+    ]
+  },
+  {
+    "question": "When does subscription cancellation take effect?",
+    "relevant_documents": [
+      "subscriptions_and_cancellation.md"
+    ]
+  },
+  {
+    "question": "Where can I download an invoice?",
+    "relevant_documents": [
+      "invoices_and_verification.md"
+    ]
+  },
+  {
+    "question": "What should I do if an invoice is missing?",
+    "relevant_documents": [
+      "invoices_and_verification.md"
+    ]
+  },
+  {
+    "question": "What information is needed for a technical issue?",
+    "relevant_documents": [
+      "technical_troubleshooting.md"
+    ]
+  },
+  {
+    "question": "How can I troubleshoot a page that will not load?",
+    "relevant_documents": [
+      "technical_troubleshooting.md"
+    ]
+  },
+  {
+    "question": "Should I share my one-time password with support?",
+    "relevant_documents": [
+      "invoices_and_verification.md",
+      "technical_troubleshooting.md"
+    ]
+  },
+  {
+    "question": "How do agents verify account ownership?",
+    "relevant_documents": [
+      "password_and_login.md",
+      "invoices_and_verification.md"
+    ]
+  }
+]

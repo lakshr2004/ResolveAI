@@ -1,0 +1,2 @@
+# Subscription Management
+Customers can view their active subscription from Account Settings under Billing. The cancellation action is available in the subscription management screen when the account is in good standing. Cancellation stops future renewal according to the plan terms shown at purchase. The exact end date and any remaining access should be confirmed from the account's subscription record. Agents must not claim that a cancellation is complete until the subscription status confirms it.

@@ -1,0 +1,2 @@
+# Basic Technical Troubleshooting
+For a page that does not load, ask the customer to refresh the page, verify network connectivity, and try a current version of a supported browser. If the issue persists, collect the browser name and version, operating system, approximate time of failure, and a screenshot with personal information removed. Do not ask customers to disable security software or share authentication secrets. Escalate reproducible service errors and suspected data loss to the technical support team.
