@@ -1932,6 +1932,7 @@ def support_activity_analytics(
 # AUTHENTICATION - LOGIN
 # --------------------------------------------------
 
+
 @app.post("/api/auth/login", response_model=TokenResponse)
 def login(
     credentials: LoginRequest,
@@ -1945,10 +1946,21 @@ def login(
         .first()
     )
 
-    if not user or not verify_password(
+    if not user:
+        logger.warning("Login failed: user not found")
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    password_valid = verify_password(
         credentials.password,
         user.password_hash,
-    ):
+    )
+
+
+    if not password_valid:
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password",

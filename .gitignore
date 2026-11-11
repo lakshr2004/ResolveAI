@@ -11,3 +11,6 @@ __pycache__/
 node_modules/
 dist/
 .DS_Store
+
+# Local migration backup
+/ResolveAI-backup-20261110-233255/

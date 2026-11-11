@@ -12,8 +12,10 @@ class Settings(BaseSettings):
     # Database Configuration
     database_url: str = "sqlite:///./resolveai.db"
 
-    # Qdrant Configuration
+        # Qdrant Configuration
     qdrant_path: str = "./data/qdrant"
+    qdrant_url: str = ""
+    qdrant_api_key: str = ""
     qdrant_collection: str = "resolveai_knowledge"
 
     # Embedding Configuration

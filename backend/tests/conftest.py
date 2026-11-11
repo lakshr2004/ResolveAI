@@ -17,6 +17,8 @@ sys.path.insert(0, str(ROOT))
 
 os.environ["DATABASE_URL"] = "sqlite:///./test_resolveai.db"
 os.environ["QDRANT_PATH"] = "./data/test_qdrant"
+os.environ["QDRANT_URL"] = ""
+os.environ["QDRANT_API_KEY"] = ""
 os.environ["GROQ_API_KEY"] = ""
 
 
