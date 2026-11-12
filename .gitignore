@@ -1,16 +1,29 @@
+﻿# Environment variables and secrets
 .env
 .env.*
 !.env.example
+
+# Python environments and cache
 .venv/
 __pycache__/
 .pytest_cache/
 *.py[cod]
+
+# Local databases
 *.db
+*.db-wal
+*.db-shm
+
+# Local Qdrant storage
 **/data/qdrant/
 **/data/test_qdrant/
+
+# Frontend dependencies and builds
 node_modules/
 dist/
-.DS_Store
 
-# Local migration backup
-/ResolveAI-backup-20261110-233255/
+# Coverage and OS files
+.coverage
+htmlcov/
+.DS_Store
+Thumbs.db
