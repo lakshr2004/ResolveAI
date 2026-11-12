@@ -4,25 +4,25 @@ services:
     name: resolveai-api
     runtime: python
     rootDir: backend
-    plan: starter
+    plan: free
 
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
-    disk:
-      name: resolveai-data
-      mountPath: /opt/render/project/src/backend/data
-      sizeGB: 1
+    healthCheckPath: /health
 
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.4
 
       - key: DATABASE_URL
-        value: sqlite:////opt/render/project/src/backend/data/resolveai.db
+        sync: false
 
-      - key: QDRANT_PATH
-        value: /opt/render/project/src/backend/data/qdrant
+      - key: QDRANT_URL
+        sync: false
+
+      - key: QDRANT_API_KEY
+        sync: false
 
       - key: QDRANT_COLLECTION
         value: resolveai_knowledge
