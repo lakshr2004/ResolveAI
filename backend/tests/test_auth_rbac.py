@@ -725,4 +725,133 @@ def test_deactivated_user_cannot_access_api_with_existing_token(client):
 
     response = client.get("/api/tickets")
 
-    assert response.status_code == 401    
+    assert response.status_code == 401
+
+
+# =========================================================
+# JWT-002 DATABASE-BACKED JTI REVOCATION REGRESSION TESTS
+# =========================================================
+
+def test_login_generates_token_with_unique_jti(client):
+    from app.security import decode_access_token
+    token = create_test_user("Agent")
+    res = decode_access_token(token)
+    assert res is not None
+    _, jti = res
+    assert isinstance(jti, str)
+    assert len(jti) == 36
+
+
+def test_logout_revokes_presented_token_and_blocks_subsequent_requests(client):
+    token = create_test_user("Agent")
+    client.headers.update({"Authorization": f"Bearer {token}"})
+
+    res1 = client.get("/api/tickets")
+    assert res1.status_code == 200
+
+    logout_res = client.post("/api/auth/logout")
+    assert logout_res.status_code == 200
+    assert logout_res.json()["message"] == "Successfully logged out"
+
+    res2 = client.get("/api/tickets")
+    assert res2.status_code == 401
+
+
+def test_another_user_token_remains_valid_after_logout(client):
+    token1 = create_test_user("Agent")
+    token2 = create_test_user("Viewer")
+
+    client.headers.update({"Authorization": f"Bearer {token1}"})
+    assert client.post("/api/auth/logout").status_code == 200
+
+    assert client.get("/api/tickets").status_code == 401
+
+    client.headers.update({"Authorization": f"Bearer {token2}"})
+    assert client.get("/api/tickets").status_code == 200
+
+
+def test_repeated_logout_is_idempotent(client):
+    token = create_test_user("Agent")
+    client.headers.update({"Authorization": f"Bearer {token}"})
+
+    assert client.post("/api/auth/logout").status_code == 200
+    assert client.post("/api/auth/logout").status_code == 200
+    assert client.get("/api/tickets").status_code == 401
+
+
+def test_expired_token_returns_401(client):
+    from app.security import create_access_token
+    from app.models import User
+    from app.database import SessionLocal
+    import jwt
+    from datetime import datetime, timedelta, timezone
+    from app.config import settings
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).first()
+        now = datetime.now(timezone.utc)
+        payload = {
+            "sub": str(user.id),
+            "jti": str(uuid.uuid4()),
+            "iat": now - timedelta(hours=2),
+            "nbf": now - timedelta(hours=2),
+            "exp": now - timedelta(hours=1),
+            "type": "access",
+        }
+        expired_token = jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    finally:
+        db.close()
+
+    client.headers.update({"Authorization": f"Bearer {expired_token}"})
+    assert client.get("/api/tickets").status_code == 401
+
+
+def test_invalid_signature_returns_401(client):
+    token = create_test_user("Agent")
+    tampered_token = token + "tampered"
+    client.headers.update({"Authorization": f"Bearer {tampered_token}"})
+    assert client.get("/api/tickets").status_code == 401
+
+
+def test_missing_jti_token_is_rejected(client):
+    from app.models import User
+    from app.database import SessionLocal
+    import jwt
+    from datetime import datetime, timedelta, timezone
+    from app.config import settings
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).first()
+        now = datetime.now(timezone.utc)
+        payload = {
+            "sub": str(user.id),
+            "iat": now,
+            "nbf": now,
+            "exp": now + timedelta(minutes=30),
+            "type": "access",
+        }
+        nojti_token = jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    finally:
+        db.close()
+
+    client.headers.update({"Authorization": f"Bearer {nojti_token}"})
+    assert client.get("/api/tickets").status_code == 401
+
+
+def test_revocation_survives_new_session(client):
+    token = create_test_user("Agent")
+    client.headers.update({"Authorization": f"Bearer {token}"})
+    assert client.post("/api/auth/logout").status_code == 200
+
+    from app.models import RevokedToken
+    from app.database import SessionLocal
+    db = SessionLocal()
+    try:
+        revoked_records = db.query(RevokedToken).all()
+        assert len(revoked_records) > 0
+    finally:
+        db.close()
+
+    assert client.get("/api/tickets").status_code == 401    

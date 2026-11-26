@@ -1,4 +1,5 @@
 
+import uuid
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models import User
+from app.models import User, RevokedToken
 
 
 password_hasher = PasswordHash.recommended()
@@ -46,7 +47,7 @@ def verify_password(
 # --------------------------------------------------
 
 def create_access_token(user_id: int) -> str:
-    """Create a signed JWT access token."""
+    """Create a signed JWT access token with a unique JTI."""
 
     if len(settings.jwt_secret_key) < 32:
         raise RuntimeError(
@@ -54,9 +55,11 @@ def create_access_token(user_id: int) -> str:
         )
 
     now = datetime.now(timezone.utc)
+    jti = str(uuid.uuid4())
 
     payload = {
         "sub": str(user_id),
+        "jti": jti,
         "iat": now,
         "nbf": now,
         "exp": now + timedelta(
@@ -76,8 +79,8 @@ def create_access_token(user_id: int) -> str:
 # JWT TOKEN VALIDATION
 # --------------------------------------------------
 
-def decode_access_token(token: str) -> int | None:
-    """Validate JWT signature and return its user ID."""
+def decode_access_token(token: str) -> tuple[int, str] | None:
+    """Validate JWT signature, claims, and return (user_id, jti)."""
 
     if len(settings.jwt_secret_key) < 32:
         raise RuntimeError(
@@ -90,7 +93,7 @@ def decode_access_token(token: str) -> int | None:
             settings.jwt_secret_key,
             algorithms=[settings.jwt_algorithm],
             options={
-                "require": ["sub", "iat", "nbf", "exp", "type"]
+                "require": ["sub", "jti", "iat", "nbf", "exp", "type"]
             },
         )
 
@@ -98,13 +101,14 @@ def decode_access_token(token: str) -> int | None:
             return None
 
         subject = payload.get("sub")
+        jti = payload.get("jti")
 
-        if not isinstance(subject, str):
+        if not isinstance(subject, str) or not isinstance(jti, str):
             return None
 
         user_id = int(subject)
 
-        return user_id if user_id > 0 else None
+        return (user_id, jti) if user_id > 0 else None
 
     except (InvalidTokenError, ValueError, TypeError):
         return None
@@ -118,7 +122,7 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    """Authenticate the JWT and retrieve the active user."""
+    """Authenticate the JWT, check JTI revocation, and retrieve the active user."""
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -126,9 +130,16 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    user_id = decode_access_token(token)
+    result = decode_access_token(token)
 
-    if user_id is None:
+    if result is None:
+        raise credentials_exception
+
+    user_id, jti = result
+
+    # Check database-backed JTI revocation
+    revoked = db.query(RevokedToken).filter(RevokedToken.jti == jti).first()
+    if revoked is not None:
         raise credentials_exception
 
     user = db.query(User).filter(

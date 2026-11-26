@@ -27,12 +27,20 @@ export function AuthProvider({ children }) {
 
   const [loading, setLoading] = useState(false);
 
-  const logout = () => {
-    sessionStorage.removeItem('resolveai_token');
-    sessionStorage.removeItem('resolveai_user');
+  const logout = async () => {
+    try {
+      if (token) {
+        await api.post('/api/auth/logout');
+      }
+    } catch {
+      // Ignore network errors during logout
+    } finally {
+      sessionStorage.removeItem('resolveai_token');
+      sessionStorage.removeItem('resolveai_user');
 
-    setToken(null);
-    setUser(null);
+      setToken(null);
+      setUser(null);
+    }
   };
 
   useEffect(() => {
