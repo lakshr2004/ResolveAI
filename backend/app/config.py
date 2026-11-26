@@ -1,4 +1,5 @@
 
+from urllib.parse import urlparse
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
@@ -78,6 +79,23 @@ class Settings(BaseSettings):
             raise ValueError(
                 "MAX_REQUEST_BODY_MB must be greater than MAX_UPLOAD_MB"
             )
+
+        if not self.cors_origins or not self.cors_origins.strip():
+            raise ValueError("CORS_ORIGINS cannot be empty")
+
+        raw_origins = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        if not raw_origins:
+            raise ValueError("CORS_ORIGINS must contain at least one valid origin")
+
+        for origin in raw_origins:
+            if origin == "*":
+                raise ValueError("Wildcard CORS origin '*' is forbidden")
+
+            parsed = urlparse(origin)
+            if parsed.scheme not in ("http", "https") or not parsed.netloc:
+                raise ValueError(f"Invalid CORS origin: '{origin}'. Must be an absolute http:// or https:// URL")
+            if parsed.path or parsed.params or parsed.query or parsed.fragment:
+                raise ValueError(f"Invalid CORS origin: '{origin}'. Cannot contain paths, query parameters, or fragments")
 
         return self
 

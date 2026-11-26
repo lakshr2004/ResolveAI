@@ -37,6 +37,7 @@ from app.models import (
     AgentNote,
     TicketActionHistory,
     User,
+    RevokedToken,
 )
 
 from app.schemas import (
@@ -68,6 +69,9 @@ from app.security import (
     hash_password,
     create_access_token,
     require_roles,
+    decode_access_token,
+    get_current_user,
+    oauth2_scheme,
 )
 
 from app.services.ai_service import analyze_and_resolve
@@ -130,7 +134,7 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=[
         "GET",
         "POST",
@@ -1980,6 +1984,76 @@ def login(
         "token_type": "bearer",
         "user": user,
     }
+
+
+# --------------------------------------------------
+# AUTHENTICATION - LOGOUT
+# --------------------------------------------------
+
+
+@app.post("/api/auth/logout", response_model=dict)
+def logout(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    """Revoke the current access token's JTI idempotently."""
+    import jwt
+    from jwt import InvalidTokenError
+    from datetime import datetime, timedelta, timezone
+
+    if len(settings.jwt_secret_key) < 32:
+        raise HTTPException(status_code=500, detail="JWT configuration error")
+
+    try:
+        payload = jwt.decode(
+            token,
+            settings.jwt_secret_key,
+            algorithms=[settings.jwt_algorithm],
+            options={
+                "require": ["sub", "jti", "iat", "nbf", "exp", "type"]
+            },
+        )
+
+        if payload.get("type") != "access":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+
+        subject = payload.get("sub")
+        jti = payload.get("jti")
+
+        if not isinstance(subject, str) or not isinstance(jti, str):
+            raise HTTPException(status_code=401, detail="Invalid token subject")
+
+        user_id = int(subject)
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if user is None or not user.is_active:
+            raise HTTPException(status_code=401, detail="Invalid or inactive user")
+
+        exp_timestamp = payload.get("exp")
+        if exp_timestamp:
+            expires_at = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)
+        else:
+            expires_at = datetime.now(timezone.utc) + timedelta(days=1)
+
+        existing = db.query(RevokedToken).filter(RevokedToken.jti == jti).first()
+        if not existing:
+            revoked_token = RevokedToken(
+                jti=jti,
+                expires_at=expires_at,
+            )
+            db.add(revoked_token)
+            db.commit()
+
+    except (InvalidTokenError, ValueError, TypeError, HTTPException) as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired authentication token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return {"message": "Successfully logged out"}
 
 
 # --------------------------------------------------

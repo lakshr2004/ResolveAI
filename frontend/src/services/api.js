@@ -36,6 +36,7 @@ api.interceptors.response.use(
     if (
       status === 401 &&
       !requestUrl.includes('/api/auth/login') &&
+      !requestUrl.includes('/api/auth/logout') &&
       sessionStorage.getItem('resolveai_token')
     ) {
       sessionStorage.removeItem('resolveai_token');
